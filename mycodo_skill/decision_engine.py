@@ -42,8 +42,11 @@ except ImportError:
     print("# [WARN] species_loader not available — falling back to legacy phase_config.py", file=sys.stderr)
     from phase_config import classify_all, get_phase
 
-SHT45_ID_FRAG = "8523956e"
-SCD41_ID_FRAG = "cb36c5c3"
+# Device ID fragments — set these to a unique substring of your Mycodo sensor UUIDs.
+# Used to distinguish SHT45 vs SCD41 rows in InfluxDB CSV output.
+# Example: if your SHT45 UUID is "a1b2c3d4-...-8523956e", use "8523956e".
+SHT45_ID_FRAG = os.environ.get("SHT45_ID_FRAG", "YOUR_SHT45_ID_FRAGMENT")
+SCD41_ID_FRAG = os.environ.get("SCD41_ID_FRAG", "YOUR_SCD41_ID_FRAGMENT")
 OVERRIDE_PATH = Path.home() / ".mycodo-skill-override.json"
 
 
