@@ -1,0 +1,49 @@
+# Mycodo Hermes Skill Crontab Example
+# Standard Linux crontab entries for the mycodo decision engine
+# and follow-up checker. Adjust paths to match your installation.
+#
+# Install with: crontab -e
+# Verify with:  crontab -l
+
+# ──────────────────────────────────────────────────────────────
+# CORE: Decision Engine (30-minute cycle)
+# The primary environmental control loop. Reads sensors, evaluates
+# conditions against species thresholds, fires actuator commands.
+# ──────────────────────────────────────────────────────────────
+*/30 * * * * python3 $HOME/mycodo/mycodo_skill/decision_engine.py --species lions_mane --phase fruiting --auto-phase --execute --camera --html --html-dir $HOME/mycodo/reports/
+
+# ──────────────────────────────────────────────────────────────
+# CORE: Adaptive Follow-Up Checker (10-minute cycle)
+# Zero-cost verification that actuator actions produced the
+# expected environmental change. Runs as pure shell script —
+# no LLM tokens consumed. Only alerts on failure.
+# ──────────────────────────────────────────────────────────────
+*/10 * * * * bash $HOME/mycodo/scripts/mycodo-followup-wrapper.sh
+
+# ──────────────────────────────────────────────────────────────
+# OPTIONAL: Scheduled Sensor Checks
+# Provide baseline readings for trend analysis and audits.
+# ──────────────────────────────────────────────────────────────
+
+# Morning sensor snapshot (6:00 AM)
+0 6 * * * bash $HOME/mycodo/scripts/sensor-query.sh snapshot > $HOME/mycodo/sensor-data/raw/sensor-overnight.md
+
+# Afternoon sensor snapshot (3:00 PM)
+0 15 * * * bash $HOME/mycodo/scripts/sensor-query.sh snapshot > $HOME/mycodo/sensor-data/raw/sensor-pm-fetch.md
+
+# ──────────────────────────────────────────────────────────────
+# OPTIONAL: Contamination Reddit Fetch (daily)
+# Pulls contamination-related posts from mushroom subreddits.
+# See contamination/README.md for details.
+# ──────────────────────────────────────────────────────────────
+0 10 * * * python3 $HOME/mycodo/contamination/reddit-fetch-parser.py --out $HOME/mycodo/contamination-data/contamination-fetch.md --days 7
+
+# ──────────────────────────────────────────────────────────────
+# DIRECTORY SETUP (run once before enabling cron jobs):
+#
+#   mkdir -p $HOME/mycodo/sensor-data/raw \
+#            $HOME/mycodo/sensor-data/snapshots \
+#            $HOME/mycodo/reports/ \
+#            $HOME/mycodo/contamination-data/
+#
+# ──────────────────────────────────────────────────────────────

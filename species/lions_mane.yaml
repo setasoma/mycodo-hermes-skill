@@ -1,0 +1,250 @@
+schema_version: "1.0"
+species_id: lions_mane
+common_name: Lion's Mane
+scientific_name: Hericium erinaceus
+
+# Optimal environmental parameters by grow phase
+phases:
+  colonization:
+    label: Colonization
+    description: Mycelium growing through substrate. High CO2 is normal.
+    duration_estimate: 14-21  # days, for auto-transition timing
+    targets:
+      temperature:
+        ideal_min: 21
+        ideal_max: 24
+        accept_min: 18
+        accept_max: 26
+        alert_min: 16
+        alert_max: 28
+      humidity:
+        ideal_min: 85
+        ideal_max: 95
+        accept_min: 80
+        accept_max: 95
+        alert_min: 75
+        alert_max: 98
+      co2:
+        ideal_min: 2000
+        ideal_max: 5000
+        accept_min: 0
+        accept_max: 8000
+        alert_min: 0
+        alert_max: 10000
+    fan_rules:
+      authority: false
+      burst_duration: 360
+      humidity_floor: 80
+      co2_trigger: 10000
+      co2_critical: 15000
+      mode: off  # explicit mode for clarity
+    humidifier_rules:
+      active: true
+      humidity_target: 90
+      deadband_low: 85
+      deadband_high: 95
+    notes: Fan OFF by default. Only fire for anaerobic risk (>10k ppm) or condensation (>98%).
+
+  primordia:
+    label: Primordia / Pinning Initiation
+    description: Transition phase. Temp drop + fresh air trigger pin formation.
+    duration_estimate: 3-7
+    transition_trigger: manual  # NEVER auto — operator must cut bags first
+    targets:
+      temperature:
+        ideal_min: 15
+        ideal_max: 18
+        accept_min: 13
+        accept_max: 20
+        alert_min: 10
+        alert_max: 22
+      humidity:
+        ideal_min: 90
+        ideal_max: 95
+        accept_min: 85
+        accept_max: 97
+        alert_min: 85
+        alert_max: 98
+      co2:
+        ideal_min: 500
+        ideal_max: 800
+        accept_min: 0
+        accept_max: 1000
+        alert_min: 0
+        alert_max: 1200
+    fan_rules:
+      authority: true
+      burst_duration: 360
+      humidity_floor: 85
+      co2_trigger: 800
+      co2_critical: 1000
+      mode: burst
+    humidifier_rules:
+      active: true
+      humidity_target: 92
+      deadband_low: 85
+      deadband_high: 97
+    notes: Fan authority ACTIVE. Fresh air is critical. Do NOT fire fan if humidity <85%.
+
+  fruiting:
+    label: Fruiting
+    description: Active mushroom growth with exposed mycelium blocks.
+    duration_estimate: 7-14
+    transition_trigger: auto  # Can auto-detect via time + CO2 + visual
+    targets:
+      temperature:
+        ideal_min: 16
+        ideal_max: 18
+        accept_min: 15
+        accept_max: 21
+        alert_min: 12
+        alert_max: 24
+      humidity:
+        ideal_min: 90
+        ideal_max: 93
+        accept_min: 85
+        accept_max: 93
+        alert_min: 80
+        alert_max: 98
+      co2:
+        ideal_min: 400
+        ideal_max: 600
+        accept_min: 0
+        accept_max: 800
+        alert_min: 0
+        alert_max: 1000
+    fan_rules:
+      authority: true
+      burst_duration: 360
+      humidity_floor: 88
+      co2_trigger: 800
+      co2_critical: 1000
+      mode: burst
+    humidifier_rules:
+      active: true
+      humidity_target: 91
+      deadband_low: 85
+      deadband_high: 93
+    notes: Exposed blocks — accept_max lowered to 93% to prevent saturation.
+
+  late_stage_fruiting:
+    label: Late-Stage Fruiting
+    description: Days to 1 week remaining. Large fruiting bodies. CO2 is THE priority.
+    duration_estimate: 7-10
+    transition_trigger: auto  # Time-based after fruiting duration threshold
+    targets:
+      temperature:
+        ideal_min: 16
+        ideal_max: 18
+        accept_min: 15
+        accept_max: 21
+        alert_min: 12
+        alert_max: 24
+      humidity:
+        ideal_min: 90
+        ideal_max: 95
+        accept_min: 85
+        accept_max: 98
+        alert_min: 80
+        alert_max: 100
+      co2:
+        ideal_min: 400
+        ideal_max: 600
+        accept_min: 0
+        accept_max: 800
+        alert_min: 0
+        alert_max: 1000
+    fan_rules:
+      authority: true
+      burst_duration: 0
+      humidity_floor: 0
+      co2_trigger: 0
+      co2_critical: 0
+      mode: continuous
+    humidifier_rules:
+      active: true
+      humidity_target: 92
+      deadband_low: 85
+      deadband_high: 98
+    notes: Fan stays ON continuously. Humidity floor rules SUSPENDED. CO2 priority absolute.
+
+  rest:
+    label: Rest / Drying
+    description: Post-harvest drying or idle state. No active growth.
+    duration_estimate: 1-3
+    transition_trigger: manual  # Operator initiates next cycle
+    targets:
+      temperature:
+        ideal_min: 16
+        ideal_max: 21
+        accept_min: 14
+        accept_max: 24
+        alert_min: 10
+        alert_max: 28
+      humidity:
+        ideal_min: 65
+        ideal_max: 75
+        accept_min: 50
+        accept_max: 85
+        alert_min: 30
+        alert_max: 95
+      co2:
+        ideal_min: 400
+        ideal_max: 800
+        accept_min: 0
+        accept_max: 1500
+        alert_min: 0
+        alert_max: 2000
+    fan_rules:
+      authority: false
+      burst_duration: 0
+      humidity_floor: 50
+      co2_trigger: 2000
+      co2_critical: 3000
+      mode: monitor
+    humidifier_rules:
+      active: false  # Humidifier OFF during rest
+    notes: Monitor only. Fan for excess CO2 or humidity. Drying target — low humidity.
+
+
+  inactive:
+    label: Inactive / No Blocks
+    description: Tent cleaned, blocks removed. No active grow. All actuators OFF.
+    duration_estimate: null
+    transition_trigger: manual
+    targets:
+      temperature:
+        ideal_min: null
+        ideal_max: null
+        accept_min: null
+        accept_max: null
+        alert_min: null
+        alert_max: null
+      humidity:
+        ideal_min: null
+        ideal_max: null
+        accept_min: null
+        accept_max: null
+        alert_min: null
+        alert_max: null
+      co2:
+        ideal_min: null
+        ideal_max: null
+        accept_min: null
+        accept_max: null
+        alert_min: null
+        alert_max: null
+    fan_rules:
+      authority: false
+      mode: nil
+      reason: No blocks — operator manual control only
+    humidifier_rules:
+      authority: false
+      mode: nil
+      target: null
+      deadband: null
+      reason: No blocks — operator manual control only
+    notes:
+      - ALL ACTUATORS are MANUAL. Decision engine will never touch relays.
+      - Use for cleaning, drying, waiting for next grow cycle.
+      - Auto-phase will NOT transition out of inactive.

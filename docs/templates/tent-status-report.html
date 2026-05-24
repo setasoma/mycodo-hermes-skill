@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mycodo — Tent Status Report</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: #0f1115;
+    color: #e2e8f0;
+    padding: 40px 20px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  .header {
+    border-bottom: 2px solid #22c55e;
+    padding-bottom: 20px;
+    margin-bottom: 30px;
+  }
+  .header h1 {
+    font-size: 28px;
+    color: #22c55e;
+    letter-spacing: -0.5px;
+  }
+  .header .meta {
+    color: #64748b;
+    font-size: 14px;
+    margin-top: 6px;
+  }
+  .status-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 30px;
+  }
+  .card {
+    background: #1a1d23;
+    border: 1px solid #2d3748;
+    border-radius: 12px;
+    padding: 20px;
+    transition: border-color 0.2s;
+  }
+  .card:hover { border-color: #22c55e; }
+  .card-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #64748b;
+    margin-bottom: 8px;
+  }
+  .card-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: #f1f5f9;
+  }
+  .card-unit {
+    font-size: 14px;
+    color: #94a3b8;
+    margin-left: 4px;
+  }
+  .card-status {
+    font-size: 12px;
+    margin-top: 8px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    display: inline-block;
+    font-weight: 600;
+  }
+  .optimal { background: rgba(34,197,94,0.15); color: #22c55e; }
+  .warning { background: rgba(234,179,8,0.15); color: #eab308; }
+  .alert   { background: rgba(239,68,68,0.15); color: #ef4444; }
+  .section {
+    background: #1a1d23;
+    border: 1px solid #2d3748;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .section h2 {
+    font-size: 16px;
+    color: #22c55e;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .section p, .section li {
+    color: #94a3b8;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+  .section ul { padding-left: 20px; }
+  .section li { margin-bottom: 6px; }
+  .actuator-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #2d3748;
+  }
+  .actuator-row:last-child { border-bottom: none; }
+  .actuator-name { font-weight: 600; color: #e2e8f0; }
+  .actuator-state {
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .state-on  { background: rgba(34,197,94,0.2); color: #22c55e; }
+  .state-off { background: rgba(100,116,139,0.2); color: #64748b; }
+  .footer {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #2d3748;
+    font-size: 12px;
+    color: #475569;
+    text-align: center;
+  }
+  .tag {
+    display: inline-block;
+    background: #0f1115;
+    border: 1px solid #2d3748;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    color: #94a3b8;
+    margin-right: 8px;
+    margin-bottom: 8px;
+  }
+  .tag strong { color: #e2e8f0; }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>Mycodo Tent Report</h1>
+  <div class="meta">Grow Tent 1 · Lion's Mane (2nd Flush) · {{REPORT_DATE}}</div>
+</div>
+<div class="status-grid">
+  <div class="card">
+    <div class="card-label">Temperature</div>
+    <div class="card-value">{{TEMP}}<span class="card-unit">C</span></div>
+    <span class="card-status {{TEMP_STATUS_CLASS}}">{{TEMP_STATUS}}</span>
+  </div>
+  <div class="card">
+    <div class="card-label">Humidity</div>
+    <div class="card-value">{{HUMIDITY}}<span class="card-unit">%</span></div>
+    <span class="card-status {{HUMIDITY_STATUS_CLASS}}">{{HUMIDITY_STATUS}}</span>
+  </div>
+  <div class="card">
+    <div class="card-label">CO2</div>
+    <div class="card-value">{{CO2}}<span class="card-unit">ppm</span></div>
+    <span class="card-status {{CO2_STATUS_CLASS}}">{{CO2_STATUS}}</span>
+  </div>
+  <div class="card">
+    <div class="card-label">VPD</div>
+    <div class="card-value">{{VPD}}<span class="card-unit">kPa</span></div>
+    <span class="card-status {{VPD_STATUS_CLASS}}">{{VPD_STATUS}}</span>
+  </div>
+</div>
+<div class="section">
+  <h2>Actuator States</h2>
+  <div class="actuator-row">
+    <span class="actuator-name">Fan (GPIO {{FAN_GPIO}})</span>
+    <span class="actuator-state {{FAN_STATE_CLASS}}">{{FAN_STATE}}</span>
+  </div>
+  <div class="actuator-row">
+    <span class="actuator-name">Humidifier (GPIO {{HUMIDIFIER_GPIO}})</span>
+    <span class="actuator-state {{HUMIDIFIER_STATE_CLASS}}">{{HUMIDIFIER_STATE}}</span>
+  </div>
+</div>
+<div class="section">
+  <h2>Grow Phase Protocol</h2>
+  <p><strong>Phase:</strong> {{PHASE_LABEL}}</p>
+  <p style="margin-top: 10px;"><strong>Active Rules:</strong></p>
+  <ul>
+    {{ACTIVE_RULES}}
+  </ul>
+</div>
+<div class="section">
+  <h2>Anomalies & Notes</h2>
+  <ul>
+    {{ANOMALIES}}
+  </ul>
+</div>
+<div class="section">
+  <h2>Quick Stats</h2>
+  <span class="tag">Block Age: <strong>{{BLOCK_AGE}}</strong></span>
+  <span class="tag">Flush: <strong>{{FLUSH_NUMBER}}</strong></span>
+  <span class="tag">Contamination Risk: <strong>{{CONTAM_RISK}}</strong></span>
+  <span class="tag">Last Decision: <strong>{{LAST_DECISION}}</strong></span>
+  <span class="tag">Uptime: <strong>{{UPTIME}}</strong></span>
+</div>
+<div class="footer">
+  Generated by Agent · Mycodo Autonomous Control System · your-domain.example.com
+</div>
+</body>
+</html>

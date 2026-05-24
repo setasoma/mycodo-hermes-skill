@@ -1,0 +1,222 @@
+schema_version: "1.0"
+species_id: turkey_tail
+common_name: Turkey Tail
+scientific_name: Trametes versicolor
+
+# Turkey Tail notes:
+# - Wood decomposer — grows on logs or supplemented hardwood sawdust blocks
+# - Very aggressive colonizer, fast growth
+# - Prefers cooler temperatures than most species
+# - High fresh air exchange needed — prevents contamination
+# - Long fruiting period with multiple flushes
+# - Lower humidity than Lion's Mane
+
+phases:
+  colonization:
+    label: Spawn Run
+    description: Very fast colonization. Keep dark, humid.
+    duration_estimate: 7-14
+    targets:
+      temperature:
+        ideal_min: 20
+        ideal_max: 24
+        accept_min: 18
+        accept_max: 26
+        alert_min: 16
+        alert_max: 28
+      humidity:
+        ideal_min: 75
+        ideal_max: 85
+        accept_min: 70
+        accept_max: 90
+        alert_min: 65
+        alert_max: 95
+      co2:
+        ideal_min: 2000
+        ideal_max: 5000
+        accept_min: 0
+        accept_max: 8000
+        alert_min: 0
+        alert_max: 10000
+    fan_rules:
+      authority: false
+      burst_duration: 360
+      humidity_floor: 70
+      co2_trigger: 10000
+      co2_critical: 15000
+      mode: off
+    humidifier_rules:
+      active: true
+      humidity_target: 80
+      deadband_low: 70
+      deadband_high: 85
+    notes: Dark, still, humid. Lower humidity than Lion's Mane to prevent bacterial growth.
+
+  primordia:
+    label: Pinning
+    description: Light exposure and fresh air trigger conk formation.
+    duration_estimate: 5-10
+    transition_trigger: manual
+    targets:
+      temperature:
+        ideal_min: 18
+        ideal_max: 22
+        accept_min: 16
+        accept_max: 24
+        alert_min: 14
+        alert_max: 26
+      humidity:
+        ideal_min: 80
+        ideal_max: 88
+        accept_min: 75
+        accept_max: 90
+        alert_min: 70
+        alert_max: 90
+      co2:
+        ideal_min: 500
+        ideal_max: 1000
+        accept_min: 0
+        accept_max: 1500
+        alert_min: 0
+        alert_max: 2000
+    fan_rules:
+      authority: true
+      burst_duration: 360
+      humidity_floor: 75
+      co2_trigger: 1500
+      co2_critical: 2000
+      mode: burst
+    humidifier_rules:
+      active: true
+      humidity_target: 84
+      deadband_low: 75
+      deadband_high: 88
+    notes: Fan authority active. Fresh air critical for shelf formation.
+
+  fruiting:
+    label: Fruiting
+    description: Concentric bands form on shelf mushrooms. Colors develop in light.
+    duration_estimate: 14-30
+    transition_trigger: auto
+    targets:
+      temperature:
+        ideal_min: 18
+        ideal_max: 22
+        accept_min: 16
+        accept_max: 24
+        alert_min: 14
+        alert_max: 26
+      humidity:
+        ideal_min: 80
+        ideal_max: 88
+        accept_min: 75
+        accept_max: 90
+        alert_min: 70
+        alert_max: 90
+      co2:
+        ideal_min: 400
+        ideal_max: 800
+        accept_min: 0
+        accept_max: 1200
+        alert_min: 0
+        alert_max: 1500
+    fan_rules:
+      authority: true
+      burst_duration: 360
+      humidity_floor: 75
+      co2_trigger: 1200
+      co2_critical: 1500
+      mode: burst
+    humidifier_rules:
+      active: true
+      humidity_target: 84
+      deadband_low: 75
+      deadband_high: 88
+    notes: Light exposure brings out blue, brown, orange bands. UV spectrum beneficial.
+
+  late_stage_fruiting:
+    label: Maturation / Spore Release
+    description: Bracket fully formed. Continue harvest or let mature.
+    duration_estimate: 14-30
+    transition_trigger: auto
+    targets:
+      temperature:
+        ideal_min: 18
+        ideal_max: 22
+        accept_min: 16
+        accept_max: 24
+        alert_min: 14
+        alert_max: 26
+      humidity:
+        ideal_min: 75
+        ideal_max: 85
+        accept_min: 70
+        accept_max: 88
+        alert_min: 65
+        alert_max: 90
+      co2:
+        ideal_min: 400
+        ideal_max: 800
+        accept_min: 0
+        accept_max: 1200
+        alert_min: 0
+        alert_max: 1500
+    fan_rules:
+      authority: true
+      burst_duration: 0
+      humidity_floor: 0
+      co2_trigger: 0
+      co2_critical: 0
+      mode: burst
+    humidifier_rules:
+      active: false
+    notes: Lower humidity for drying. Turkeys release powdery white spores.
+
+  rest:
+    label: Rest / Drying
+    description: Post-harvest. Can flush again after rehydration.
+    duration_estimate: 3-7
+    transition_trigger: manual
+    targets:
+      temperature:
+        ideal_min: 16
+        ideal_max: 24
+        accept_min: 14
+        accept_max: 26
+        alert_min: 10
+        alert_max: 28
+      humidity:
+        ideal_min: 55
+        ideal_max: 65
+        accept_min: 50
+        accept_max: 75
+        alert_min: 45
+        alert_max: 80
+      co2:
+        ideal_min: 400
+        ideal_max: 800
+        accept_min: 0
+        accept_max: 1500
+        alert_min: 0
+        alert_max: 2000
+    fan_rules:
+      authority: false
+      burst_duration: 0
+      humidity_floor: 50
+      co2_trigger: 2000
+      co2_critical: 3000
+      mode: monitor
+    humidifier_rules:
+      active: false
+    notes: Full dry before rehydration for next flush.
+
+sensor_authority:
+  temperature: sht45
+  humidity: sht45
+  co2: scd41
+
+safety:
+  oversaturation_guard_rh: 95
+  max_temp: 28
+  min_temp: 10
+  sensor_offline_minutes: 30

@@ -1,0 +1,4 @@
+# Mycodo Hermes Skill — autonomous mushroom cultivation for Hermes agents
+# Python 3.9+ required (zoneinfo is stdlib in 3.9+)
+
+PyYAML>=5.0

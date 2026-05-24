@@ -1,0 +1,214 @@
+schema_version: "1.0"
+species_id: oyster
+common_name: Pearl Oyster
+scientific_name: Pleurotus ostreatus
+
+phases:
+  colonization:
+    label: Colonization
+    description: Fast colonizer. Higher temps acceptable.
+    duration_estimate: 10-14
+    targets:
+      temperature:
+        ideal_min: 24
+        ideal_max: 28
+        accept_min: 20
+        accept_max: 30
+        alert_min: 18
+        alert_max: 32
+      humidity:
+        ideal_min: 85
+        ideal_max: 95
+        accept_min: 80
+        accept_max: 95
+        alert_min: 75
+        alert_max: 98
+      co2:
+        ideal_min: 2000
+        ideal_max: 5000
+        accept_min: 0
+        accept_max: 10000
+        alert_min: 0
+        alert_max: 15000
+    fan_rules:
+      authority: false
+      burst_duration: 360
+      humidity_floor: 80
+      co2_trigger: 15000
+      co2_critical: 20000
+      mode: off
+    humidifier_rules:
+      active: true
+      humidity_target: 90
+      deadband_low: 80
+      deadband_high: 95
+    notes: Fan OFF. Oysters tolerate very high CO2 during colonization.
+
+  primordia:
+    label: Primordia / Pinning
+    description: Trigger pins with temp drop and light exposure.
+    duration_estimate: 3-5
+    transition_trigger: manual
+    targets:
+      temperature:
+        ideal_min: 18
+        ideal_max: 22
+        accept_min: 16
+        accept_max: 24
+        alert_min: 14
+        alert_max: 26
+      humidity:
+        ideal_min: 90
+        ideal_max: 95
+        accept_min: 85
+        accept_max: 97
+        alert_min: 85
+        alert_max: 98
+      co2:
+        ideal_min: 800
+        ideal_max: 1200
+        accept_min: 0
+        accept_max: 1500
+        alert_min: 0
+        alert_max: 2000
+    fan_rules:
+      authority: true
+      burst_duration: 360
+      humidity_floor: 85
+      co2_trigger: 1500
+      co2_critical: 2000
+      mode: burst
+    humidifier_rules:
+      active: true
+      humidity_target: 92
+      deadband_low: 85
+      deadband_high: 97
+    notes: Lower CO2 than Lion's Mane — fresher air triggers pin formation.
+
+  fruiting:
+    label: Fruiting
+    description: Fast fruiting — 3-5 days to harvest once pins appear.
+    duration_estimate: 5-10
+    transition_trigger: auto
+    targets:
+      temperature:
+        ideal_min: 18
+        ideal_max: 22
+        accept_min: 16
+        accept_max: 24
+        alert_min: 14
+        alert_max: 26
+      humidity:
+        ideal_min: 90
+        ideal_max: 95
+        accept_min: 85
+        accept_max: 95
+        alert_min: 80
+        alert_max: 98
+      co2:
+        ideal_min: 500
+        ideal_max: 1000
+        accept_min: 0
+        accept_max: 1500
+        alert_min: 0
+        alert_max: 2000
+    fan_rules:
+      authority: true
+      burst_duration: 360
+      humidity_floor: 85
+      co2_trigger: 1500
+      co2_critical: 2000
+      mode: burst
+    humidifier_rules:
+      active: true
+      humidity_target: 92
+      deadband_low: 85
+      deadband_high: 95
+    notes: Short fruiting window. Watch closely for harvest timing.
+
+  late_stage_fruiting:
+    label: Spore Release / Late Fruiting
+    description: Oysters release heavy spore load. Air quality priority.
+    duration_estimate: 1-3
+    transition_trigger: auto
+    targets:
+      temperature:
+        ideal_min: 18
+        ideal_max: 22
+        accept_min: 16
+        accept_max: 24
+        alert_min: 14
+        alert_max: 26
+      humidity:
+        ideal_min: 85
+        ideal_max: 90
+        accept_min: 80
+        accept_max: 95
+        alert_min: 75
+        alert_max: 98
+      co2:
+        ideal_min: 400
+        ideal_max: 800
+        accept_min: 0
+        accept_max: 1200
+        alert_min: 0
+        alert_max: 1500
+    fan_rules:
+      authority: true
+      burst_duration: 0
+      humidity_floor: 0
+      co2_trigger: 0
+      co2_critical: 0
+      mode: continuous
+    humidifier_rules:
+      active: false  # Let humidity drop to reduce spore load
+    notes: Continuous fan critical — oyster spores irritate lungs.
+
+  rest:
+    label: Rest / Cleaning
+    description: Post-harvest cleanout.
+    duration_estimate: 1-2
+    transition_trigger: manual
+    targets:
+      temperature:
+        ideal_min: 16
+        ideal_max: 24
+        accept_min: 14
+        accept_max: 26
+        alert_min: 10
+        alert_max: 30
+      humidity:
+        ideal_min: 60
+        ideal_max: 70
+        accept_min: 50
+        accept_max: 80
+        alert_min: 40
+        alert_max: 90
+      co2:
+        ideal_min: 400
+        ideal_max: 800
+        accept_min: 0
+        accept_max: 1500
+        alert_min: 0
+        alert_max: 2000
+    fan_rules:
+      authority: false
+      burst_duration: 0
+      humidity_floor: 50
+      co2_trigger: 2000
+      co2_critical: 3000
+      mode: monitor
+    humidifier_rules:
+      active: false
+    notes: Full clean and sanitize between flushes.
+
+sensor_authority:
+  temperature: sht45
+  humidity: sht45
+  co2: scd41
+
+safety:
+  oversaturation_guard_rh: 95  # Oysters more tolerant of high humidity
+  max_temp: 32
+  min_temp: 10
+  sensor_offline_minutes: 30

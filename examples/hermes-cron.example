@@ -1,0 +1,124 @@
+# Mycodo Hermes Skill Cron Job Example
+#
+# This shows how to set up the mycodo decision engine as a Hermes
+# scheduled task with a natural-language prompt. Hermes executes
+# the prompt as an LLM agent with tool access (sensor queries,
+# relay commands, file I/O).
+#
+# Hermes cron jobs use a different format than standard crontab:
+# each job has a name, schedule, agent type, and a prompt that
+# the LLM executes on each run.
+#
+# ──────────────────────────────────────────────────────────────
+
+# Job 1: Decision Engine (30-minute cycle)
+# ─────────────────────────────────────────
+name: "Mycodo Decision Engine -- 30min"
+schedule: "*/30 * * * *"
+type: agent        # Uses LLM reasoning
+delivery: telegram # Sends report via Telegram (silent on no-action)
+
+prompt: |
+  You are the mycodo environmental control agent.
+
+  1. Run sensor-query.sh to fetch the current sensor snapshot.
+  2. Read knowledge/grow-phase.md to determine the current phase.
+  3. Load the active species config from species/ (match the species
+     in grow-phase.md).
+  4. Compare sensor readings against phase-specific thresholds:
+     - Temperature, humidity, CO2 for the current phase
+     - Check for alert-level deviations
+  5. Query current actuator states (fan relay, humidifier relay).
+  6. If action is needed:
+     - Execute the appropriate relay command (fan_burst, fan_on, etc.)
+     - Write a follow-up flag to $HOME/.mycodo-skill-followup
+     - Include the action, expected outcome, and verification metric
+  7. If no action is needed: exit silently (no report).
+  8. Generate an HTML status report with:
+     - Current readings vs thresholds (color-coded)
+     - Actions taken (if any)
+     - Camera snapshot (if --camera flag is set)
+     - Save to $HOME/mycodo/reports/
+
+  CRITICAL RULES:
+  - ALWAYS check the humidity floor before firing fan commands.
+    Do NOT fire fan if humidity is below the phase minimum.
+  - Use fan_burst (timed auto-off) instead of fan_on to prevent
+    orphaned fan states.
+  - If in late-stage fruiting, CO2 control overrides humidity floor.
+  - When in doubt about phase transitions, do NOT auto-transition.
+    Flag for operator review instead.
+
+# ──────────────────────────────────────────────────────────────
+
+# Job 2: Adaptive Follow-Up (10-minute cycle)
+# ────────────────────────────────────────────
+name: "Mycodo Adaptive Follow-up -- 10min"
+schedule: "*/10 * * * *"
+type: no_agent     # Pure script, zero LLM tokens
+delivery: origin   # Reports to origin chat only on failure
+
+script: "$HOME/mycodo/scripts/mycodo-followup-wrapper.sh"
+
+# The wrapper script:
+# 1. Checks for $HOME/.mycodo-skill-followup
+# 2. If absent: silent exit (zero cost)
+# 3. If present + 10min elapsed: re-reads sensors
+# 4. Verifies environmental improvement
+# 5. Clears flag on success, alerts on failure
+
+# ──────────────────────────────────────────────────────────────
+
+# Job 3: Morning Brief (daily, 6:15 AM)
+# ──────────────────────────────────────
+name: "Mycodo Morning Brief"
+schedule: "15 6 * * *"
+type: agent
+delivery: telegram
+
+prompt: |
+  Generate a morning brief for the grow operation:
+
+  1. Run sensor-query.sh snapshot for current readings.
+  2. Read the overnight sensor log from sensor-data/raw/sensor-overnight.md.
+  3. Summarize overnight trends (temp, humidity, CO2).
+  4. Flag any anomalies or threshold breaches overnight.
+  5. Check actuator states — is anything stuck ON or unexpectedly OFF?
+  6. Capture a camera snapshot for visual inspection.
+  7. Deliver a concise summary: current state, overnight events,
+     any action needed from the operator.
+
+# ──────────────────────────────────────────────────────────────
+
+# Job 4: Evening Audit (daily, 8:00 PM)
+# ──────────────────────────────────────
+name: "Mycodo Evening Audit"
+schedule: "0 20 * * *"
+type: agent
+delivery: telegram
+
+prompt: |
+  Run an evening audit:
+
+  1. Current sensor readings vs phase targets.
+  2. Fan and humidifier relay state verification.
+  3. Camera snapshot for visual security check.
+  4. Cross-check any recent decision engine actions against
+     actual sensor outcomes.
+  5. List outstanding risks or items needing operator attention.
+
+# ──────────────────────────────────────────────────────────────
+# NOTES:
+#
+# - The decision engine prompt references knowledge/grow-phase.md
+#   which must exist and have CURRENT_PHASE set correctly.
+#
+# - Token cost estimate: ~53 LLM calls/day at default schedules.
+#   The follow-up checker is zero-cost (pure script).
+#
+# - To adjust frequency, change the schedule field. See
+#   docs/cron-setup.md for frequency tuning guidance.
+#
+# - Hermes cron syntax follows standard 5-field cron format:
+#   minute hour day-of-month month day-of-week
+# ──────────────────────────────────────────────────────────────

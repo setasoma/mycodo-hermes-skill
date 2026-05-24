@@ -1,0 +1,265 @@
+schema_version: "1.0"
+species_id: shiitake
+common_name: Shiitake
+scientific_name: Lentinula edodes
+
+# Shiitake notes:
+# - Logs: 6-12 month colonization on hardwood
+# - Blocks: 6-8 week colonization on supplemented sawdust
+# - Requires "shocking" — cold water + temp drop to trigger fruiting
+# - Multiple flushes from same log/block
+# - Browning phase is unique — mycelium browns before fruiting
+
+phases:
+  colonization:
+    label: Spawn Run / Colonization
+    description: Slow colonizer. Maintain stable temps, high humidity.
+    duration_estimate: 42-56  # 6-8 weeks for blocks
+    targets:
+      temperature:
+        ideal_min: 21
+        ideal_max: 24
+        accept_min: 18
+        accept_max: 27
+        alert_min: 15
+        alert_max: 30
+      humidity:
+        ideal_min: 85
+        ideal_max: 95
+        accept_min: 80
+        accept_max: 97
+        alert_min: 75
+        alert_max: 98
+      co2:
+        ideal_min: 2000
+        ideal_max: 5000
+        accept_min: 0
+        accept_max: 8000
+        alert_min: 0
+        alert_max: 10000
+    fan_rules:
+      authority: false
+      burst_duration: 360
+      humidity_floor: 80
+      co2_trigger: 10000
+      co2_critical: 15000
+      mode: off
+    humidifier_rules:
+      active: true
+      humidity_target: 90
+      deadband_low: 80
+      deadband_high: 95
+    notes: Long colonization. Dark environment. Minimal disturbance.
+
+  browning:
+    label: Browning Phase
+    description: Unique to shiitake. Mycelium browns and hardens. Light exposure begins.
+    duration_estimate: 14-21
+    transition_trigger: manual  # Operator triggers by introducing light
+    targets:
+      temperature:
+        ideal_min: 20
+        ideal_max: 24
+        accept_min: 18
+        accept_max: 26
+        alert_min: 15
+        alert_max: 28
+      humidity:
+        ideal_min: 80
+        ideal_max: 90
+        accept_min: 75
+        accept_max: 92
+        alert_min: 70
+        alert_max: 95
+      co2:
+        ideal_min: 1000
+        ideal_max: 3000
+        accept_min: 0
+        accept_max: 5000
+        alert_min: 0
+        alert_max: 8000
+    fan_rules:
+      authority: false
+      burst_duration: 360
+      humidity_floor: 75
+      co2_trigger: 8000
+      co2_critical: 10000
+      mode: off
+    humidifier_rules:
+      active: true
+      humidity_target: 85
+      deadband_low: 75
+      deadband_high: 90
+    notes: Reduce humidity slightly. Introduce indirect light. Surface browning is desired.
+
+  primordia:
+    label: Shocking / Pinning
+    description: Cold water soak + temp drop triggers fruiting.
+    duration_estimate: 3-7
+    transition_trigger: manual  # MUST be manual — requires water soak
+    targets:
+      temperature:
+        ideal_min: 12
+        ideal_max: 16
+        accept_min: 10
+        accept_max: 18
+        alert_min: 8
+        alert_max: 20
+      humidity:
+        ideal_min: 90
+        ideal_max: 95
+        accept_min: 85
+        accept_max: 97
+        alert_min: 80
+        alert_max: 98
+      co2:
+        ideal_min: 500
+        ideal_max: 1000
+        accept_min: 0
+        accept_max: 1500
+        alert_min: 0
+        alert_max: 2000
+    fan_rules:
+      authority: true
+      burst_duration: 360
+      humidity_floor: 85
+      co2_trigger: 1500
+      co2_critical: 2000
+      mode: burst
+    humidifier_rules:
+      active: true
+      humidity_target: 92
+      deadband_low: 85
+      deadband_high: 97
+    notes: Cold shock is REQUIRED. This phase is always manual trigger.
+
+  fruiting:
+    label: Fruiting
+    description: Cap and stem development. Broad temperature range.
+    duration_estimate: 14-21
+    transition_trigger: auto
+    targets:
+      temperature:
+        ideal_min: 16
+        ideal_max: 20
+        accept_min: 14
+        accept_max: 23
+        alert_min: 12
+        alert_max: 25
+      humidity:
+        ideal_min: 85
+        ideal_max: 92
+        accept_min: 80
+        accept_max: 95
+        alert_min: 75
+        alert_max: 98
+      co2:
+        ideal_min: 500
+        ideal_max: 1000
+        accept_min: 0
+        accept_max: 1500
+        alert_min: 0
+        alert_max: 2000
+    fan_rules:
+      authority: true
+      burst_duration: 360
+      humidity_floor: 80
+      co2_trigger: 1500
+      co2_critical: 2000
+      mode: burst
+    humidifier_rules:
+      active: true
+      humidity_target: 88
+      deadband_low: 80
+      deadband_high: 92
+    notes: Shiitake tolerates slightly lower humidity than Lion's Mane. Good air exchange prevents deformity.
+
+  late_stage_fruiting:
+    label: Late Fruiting / Second Flush Prep
+    description: Final fruiting. Prepare blocks for rehydration.
+    duration_estimate: 7-14
+    transition_trigger: manual  # Operator decides between flushes
+    targets:
+      temperature:
+        ideal_min: 15
+        ideal_max: 20
+        accept_min: 14
+        accept_max: 23
+        alert_min: 12
+        alert_max: 25
+      humidity:
+        ideal_min: 80
+        ideal_max: 88
+        accept_min: 75
+        accept_max: 92
+        alert_min: 70
+        alert_max: 95
+      co2:
+        ideal_min: 400
+        ideal_max: 800
+        accept_min: 0
+        accept_max: 1200
+        alert_min: 0
+        alert_max: 1500
+    fan_rules:
+      authority: true
+      burst_duration: 0
+      humidity_floor: 0
+      co2_trigger: 0
+      co2_critical: 0
+      mode: burst  # Shiitake doesn't need continuous fan
+    humidifier_rules:
+      active: true
+      humidity_target: 84
+      deadband_low: 75
+      deadband_high: 88
+    notes: Drop humidity to prepare for dunk. Operator handles rehydration.
+
+  rest:
+    label: Rest / Drying Between Flushes
+    description: Post-harvest. Blocks dry before re-dunk.
+    duration_estimate: 7-14
+    transition_trigger: manual
+    targets:
+      temperature:
+        ideal_min: 16
+        ideal_max: 24
+        accept_min: 14
+        accept_max: 26
+        alert_min: 10
+        alert_max: 30
+      humidity:
+        ideal_min: 60
+        ideal_max: 70
+        accept_min: 50
+        accept_max: 80
+        alert_min: 40
+        alert_max: 90
+      co2:
+        ideal_min: 400
+        ideal_max: 800
+        accept_min: 0
+        accept_max: 1500
+        alert_min: 0
+        alert_max: 2000
+    fan_rules:
+      authority: false
+      burst_duration: 0
+      humidity_floor: 50
+      co2_trigger: 2000
+      co2_critical: 3000
+      mode: monitor
+    humidifier_rules:
+      active: false
+    notes: Allow blocks to dry. Operator manually rehydrates for next flush.
+
+sensor_authority:
+  temperature: sht45
+  humidity: sht45
+  co2: scd41
+
+safety:
+  oversaturation_guard_rh: 95
+  max_temp: 30
+  min_temp: 8
+  sensor_offline_minutes: 30
