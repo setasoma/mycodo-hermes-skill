@@ -6,6 +6,7 @@ sensor-creds.env
 # Runtime state files
 .mycodo-skill-override.json
 .mycodo-skill-phase-state.json
+.mycodo-skill-tent-state.json
 .mycodo-skill-followup
 .mycodo-skill-prev-readings.json
 .mycodo-skill-followup-log.jsonl

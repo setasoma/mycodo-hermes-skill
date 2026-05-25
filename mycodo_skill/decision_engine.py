@@ -44,10 +44,11 @@ except ImportError:
 
 # Device ID fragments — set these to a unique substring of your Mycodo sensor UUIDs.
 # Used to distinguish SHT45 vs SCD41 rows in InfluxDB CSV output.
-# Example: if your SHT45 UUID is "a1b2c3d4-...-8523956e", use "8523956e".
+# Example: if your SHT45 UUID is "a1b2c3d4-...-deadbeef", use "deadbeef".
 SHT45_ID_FRAG = os.environ.get("SHT45_ID_FRAG", "YOUR_SHT45_ID_FRAGMENT")
 SCD41_ID_FRAG = os.environ.get("SCD41_ID_FRAG", "YOUR_SCD41_ID_FRAGMENT")
 OVERRIDE_PATH = Path.home() / ".mycodo-skill-override.json"
+TENT_STATE_PATH = Path.home() / ".mycodo-skill-tent-state.json"
 
 
 
@@ -176,6 +177,20 @@ def load_override() -> dict | None:
         return None
     try:
         with open(OVERRIDE_PATH, "r") as f:
+            return json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return None
+
+
+def load_tent_state() -> dict | None:
+    """Load canonical tent state from ~/.mycodo-skill-tent-state.json.
+    Returns None if the file is missing or invalid.
+    When the tent is inactive or safety-locked, the decision engine
+    forces dry-run mode regardless of --execute flags."""
+    if not TENT_STATE_PATH.exists():
+        return None
+    try:
+        with open(TENT_STATE_PATH, "r") as f:
             return json.load(f)
     except (json.JSONDecodeError, OSError):
         return None
@@ -618,9 +633,26 @@ def main():
     parser.add_argument("--contamination-check", action="store_true", help="[STUB] Enable contamination detection when model is trained")
     args = parser.parse_args()
 
+    # --- CANONICAL TENT STATE CHECK (Layer 1) ---
+    tent_state = load_tent_state()
+    if tent_state:
+        if tent_state.get("safety_lock") and args.execute:
+            print(f"# [SAFETY] Tent state safety_lock is TRUE. Forcing dry-run.", file=sys.stderr)
+            print(f"# [STATE]   status={tent_state.get('status')} | autonomy={tent_state.get('autonomy_level')}", file=sys.stderr)
+            args.execute = False
+        if tent_state.get("status") == "inactive" and args.execute:
+            print(f"# [SAFETY] Tent state status is 'inactive'. Forcing dry-run.", file=sys.stderr)
+            args.execute = False
+
     # --- Species & Auto-Phase System ---
     species_id = args.species.lower().replace("-", "_")
     phase_name = args.phase.lower().replace("-", "_")
+
+    # --- INACTIVE PHASE SAFETY (Layer 2 — last-line defense) ---
+    if phase_name == "inactive":
+        if args.execute:
+            print("# [SAFETY] Phase 'inactive' forces dry-run. Ignoring --execute.", file=sys.stderr)
+            args.execute = False
 
     # Try species_loader first, fall back to legacy
     species_mode_active = SPECIES_MODE
@@ -744,6 +776,49 @@ def main():
         if followup_needed:
             with open(prev_file, "w") as f:
                 json.dump(decision["metrics"], f)
+            with open(followup_file, "w") as f:
+                json.dump({
+                    "fired_at": time.time(),
+                    "wait_seconds": 600,
+                    "action": action_for_followup,
+                    "prev_file": str(prev_file),
+                }, f, indent=2)
+            print(f"\n[followup] Flag set — next check in {10}m, action={action_for_followup['actuator']}:{action_for_followup['command']}")
+
+    if args.json:
+        print(json.dumps(decision, indent=2, default=str))
+    else:
+        print(format_report(decision))
+
+    # --- HTML output ---
+    if args.html:
+        from datetime import datetime, timezone
+        import zoneinfo
+        _tz_name = os.environ.get("MYCODO_SKILL_TZ", "America/New_York")
+        local_tz = zoneinfo.ZoneInfo(_tz_name)
+        now_local = datetime.now(local_tz)
+        ts = now_local.strftime("%Y%m%d_%H%M%S")
+        decision["timestamp"] = now_local.strftime("%Y-%m-%d %H:%M:%S %Z")
+        html_path = Path(args.html_dir) / f"mycodo_report_{ts}.html"
+        html_path.parent.mkdir(parents=True, exist_ok=True)
+        html_content = format_html(decision)
+        html_path.write_text(html_content, encoding="utf-8")
+        print(f"\n[html] Report saved to: {html_path}")
+
+        # Save raw camera JPG alongside HTML (for training / archival)
+        cam = decision.get("camera")
+        if cam and cam.get("ok") and cam.get("path"):
+            jpg_src = Path(cam["path"])
+            if jpg_src.exists():
+                import shutil
+                jpg_path = Path(args.html_dir) / f"mycodo_report_{ts}.jpg"
+                shutil.copy(str(jpg_src), str(jpg_path))
+                print(f"[img] Raw image saved to: {jpg_path}")
+
+
+if __name__ == "__main__":
+    main()
+etrics"], f)
             with open(followup_file, "w") as f:
                 json.dump({
                     "fired_at": time.time(),

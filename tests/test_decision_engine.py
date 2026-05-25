@@ -27,7 +27,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 os.environ["SHT45_ID_FRAG"] = "test_sht45"
 os.environ["SCD41_ID_FRAG"] = "test_scd41"
 
-from mycodo_skill.decision_engine import parse_influx_csv, build_decision
+from mycodo_skill.decision_engine import parse_influx_csv, build_decision, load_tent_state, TENT_STATE_PATH
 from mycodo_skill.species_loader import load_species, get_phase, classify_all, list_available_species
 
 
@@ -260,14 +260,115 @@ class TestClassification(unittest.TestCase):
         self.assertEqual(result["overall"], "alert")
 
 
+class TestTentState(unittest.TestCase):
+    """Test the canonical tent state safety system."""
+
+    def setUp(self):
+        """Create a temporary tent state file for testing."""
+        import tempfile
+        self.original_path = TENT_STATE_PATH
+        self.temp_dir = tempfile.mkdtemp()
+        self.temp_state = Path(self.temp_dir) / ".mycodo-skill-tent-state.json"
+
+    def tearDown(self):
+        """Clean up temporary files."""
+        import shutil
+        shutil.rmtree(self.temp_dir, ignore_errors=True)
+
+    def test_load_missing_state_returns_none(self):
+        """Missing tent state file should return None (not crash)."""
+        import mycodo_skill.decision_engine as de
+        original = de.TENT_STATE_PATH
+        de.TENT_STATE_PATH = Path("/nonexistent/path/.mycodo-skill-tent-state.json")
+        result = load_tent_state()
+        de.TENT_STATE_PATH = original
+        self.assertIsNone(result)
+
+    def test_load_valid_state(self):
+        """Valid tent state file should load correctly."""
+        import mycodo_skill.decision_engine as de
+        state = {
+            "schema_version": "1.0",
+            "status": "active",
+            "safety_lock": False,
+            "autonomy_level": "full",
+        }
+        self.temp_state.write_text(json.dumps(state))
+        original = de.TENT_STATE_PATH
+        de.TENT_STATE_PATH = self.temp_state
+        result = load_tent_state()
+        de.TENT_STATE_PATH = original
+        self.assertEqual(result["status"], "active")
+        self.assertFalse(result["safety_lock"])
+
+    def test_load_corrupt_state_returns_none(self):
+        """Corrupt JSON should return None, not crash."""
+        import mycodo_skill.decision_engine as de
+        self.temp_state.write_text("not valid json {{{")
+        original = de.TENT_STATE_PATH
+        de.TENT_STATE_PATH = self.temp_state
+        result = load_tent_state()
+        de.TENT_STATE_PATH = original
+        self.assertIsNone(result)
+
+
 if __name__ == "__main__":
     unittest.main()
-assification(self):
-        data = load_species("lions_mane")
-        phase = get_phase(data, "fruiting")
-        metrics = {"temperature": 35.0, "humidity": 30.0, "co2": 5000.0}
-        result = classify_all(metrics, phase)
         self.assertEqual(result["overall"], "alert")
+
+
+if __name__ == "__main__":
+    unittest.main()
+tState(unittest.TestCase):
+    """Test the canonical tent state safety system."""
+
+    def setUp(self):
+        """Create a temporary tent state file for testing."""
+        import tempfile
+        self.original_path = TENT_STATE_PATH
+        self.temp_dir = tempfile.mkdtemp()
+        self.temp_state = Path(self.temp_dir) / ".mycodo-skill-tent-state.json"
+
+    def tearDown(self):
+        """Clean up temporary files."""
+        import shutil
+        shutil.rmtree(self.temp_dir, ignore_errors=True)
+
+    def test_load_missing_state_returns_none(self):
+        """Missing tent state file should return None (not crash)."""
+        import mycodo_skill.decision_engine as de
+        original = de.TENT_STATE_PATH
+        de.TENT_STATE_PATH = Path("/nonexistent/path/.mycodo-skill-tent-state.json")
+        result = load_tent_state()
+        de.TENT_STATE_PATH = original
+        self.assertIsNone(result)
+
+    def test_load_valid_state(self):
+        """Valid tent state file should load correctly."""
+        import mycodo_skill.decision_engine as de
+        state = {
+            "schema_version": "1.0",
+            "status": "active",
+            "safety_lock": False,
+            "autonomy_level": "full",
+        }
+        self.temp_state.write_text(json.dumps(state))
+        original = de.TENT_STATE_PATH
+        de.TENT_STATE_PATH = self.temp_state
+        result = load_tent_state()
+        de.TENT_STATE_PATH = original
+        self.assertEqual(result["status"], "active")
+        self.assertFalse(result["safety_lock"])
+
+    def test_load_corrupt_state_returns_none(self):
+        """Corrupt JSON should return None, not crash."""
+        import mycodo_skill.decision_engine as de
+        self.temp_state.write_text("not valid json {{{")
+        original = de.TENT_STATE_PATH
+        de.TENT_STATE_PATH = self.temp_state
+        result = load_tent_state()
+        de.TENT_STATE_PATH = original
+        self.assertIsNone(result)
 
 
 if __name__ == "__main__":

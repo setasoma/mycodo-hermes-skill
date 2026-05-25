@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0",
+  "updated_at": "2026-01-01T00:00:00-05:00",
+  "updated_by": "operator via mycodo-state",
+  "status": "inactive",
+  "current_phase": "inactive",
+  "species": "lions_mane",
+  "safety_lock": true,
+  "autonomy_level": "locked",
+  "actuators": {
+    "fan": {"allowed": false, "reason": "Default — tent not active", "until": "operator_releases"},
+    "humidifier": {"allowed": false, "reason": "Default — tent not active", "until": "operator_releases"}
+  },
+  "next_phase_change": null,
+  "operator_notes": "Copy to ~/.mycodo-skill-tent-state.json. Use 'mycodo-state activate <species> <phase>' to start a grow."
+}
