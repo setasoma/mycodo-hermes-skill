@@ -165,6 +165,16 @@ cp docs/templates/mycodo-skill-override.json.example ~/.mycodo/mycodo-skill-over
 
 The override file supports forcing specific actuator states, skipping the current cycle, or locking a particular phase. The decision engine checks for an active override at stage 6 of every cycle and respects it until the file is removed or its expiration time passes.
 
+## Documentation
+
+- [Mycodo Setup Guide](docs/mycodo-setup.md) — configuring Mycodo, InfluxDB, sensors, and relays on your Pi
+- [Architecture](docs/architecture.md) — how the decision engine works internally
+- [Species System](docs/species-system.md) — YAML config format and adding new species
+- [Cron Setup](docs/cron-setup.md) — scheduling the decision engine and follow-up checker
+- [Hardware](docs/hardware.md) — hardware setup, known defects, sensor calibration
+- [Production Pitfalls](docs/pitfalls.md) — 21 lessons from two live grow cycles
+- [Example Report](examples/sample-report.html) — what a real decision report looks like (download and open in a browser)
+
 ## Contamination Intelligence (Optional)
 
 The `contamination/` directory contains tooling for building a contamination pattern database from Reddit grow communities. This module is entirely optional and operates independently from the core decision engine. See `contamination/README.md` for setup instructions.
